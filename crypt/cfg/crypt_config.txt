@@ -1,0 +1,2 @@
+feeds_dir=/home/data/crypt_data/
+feeds=bittrex market history;bitcoin-historical-data
