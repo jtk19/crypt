@@ -1,1 +1,2 @@
 feeds_dir=/home/data/crypt_data/
+destination_dir=/home/data/crypt_ohlcv/
