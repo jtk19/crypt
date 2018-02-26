@@ -1,5 +1,5 @@
 #----------------------------------------------------------------
-# Root Makefile for SAIC ADAS & Autonomous Driving Source Code
+# Root Makefile for nvest.ai analytics source code
 #----------------------------------------------------------------
 
 .DEFAULT_GOAL := all

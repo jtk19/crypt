@@ -1,8 +1,8 @@
 #----------------------------------------------------------------
-# Root Makefile for SAIC ADAS & Autonomous Driving common code
+# Root Makefile for  common code
 #----------------------------------------------------------------
 
-.DEFAULT_GOAL := all
+.DEFAULT_GOAL := this
 
 ifneq ($(BUILD),"RELEASE")
         export BUILD = "DEBUG"
@@ -71,17 +71,17 @@ define fullBuild
 	    echo "Making all in $(curr_dir)/$$subdir"; \
 	    $(MAKE) -C $(curr_dir)/$$subdir all;\
 	done
-	@#$(MAKE) target_lib  ## only header files at the moment; uncomment for .cc builds
+	$(MAKE) target_lib 
 	# post-build steps
 	mkdir -p $(COMMON_INC)
 	cp -f $(COMMON_SRC)/*.h $(COMMON_INC)
 endef
 
 
-
 all:	
 	$(call fullBuild)	
 	
+this: tree
 tree:
 	$(call fullBuild)
 

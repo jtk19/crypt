@@ -1,5 +1,5 @@
 #-------------------------------------------------------------
-# Makefile for SAIC Regions of Interest detection algorithms
+# Makefile for nvest.ai
 #-------------------------------------------------------------
 
 .DEFAULT_GOAL := this
@@ -32,7 +32,7 @@ SUBDIRS =
 
 EXTDIRS = ../common 
 
-BUILDDIRS = ohlcv_fmt
+BUILDDIRS = common ohlcv_fmt
 
 SOURCES = $(shell echo *.cc)
 
@@ -93,15 +93,13 @@ define extbuild
 	cp $(CFG) $(COMMON_BUILD)/
 endef
 
-
-tree: this
-this:	
+this: tree
+tree:	
 	$(call fullBuild)
 	
 	
 all:
 	$(call extbuild)
-	
 
 clean:
 	rm -rf $(THIS_BUILD) $(COMMON_BUILD)/ohclv_fmt $(COMMON_BUILD)/crypt_config.txt

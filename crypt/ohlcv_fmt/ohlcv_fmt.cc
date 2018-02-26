@@ -1,6 +1,11 @@
-#include "ohlcv_fmt.h"
 #include <iostream>
 #include <fstream>
+#include <vector>
+
+#include "string_util.h"
+#include <util.h>
+#include "ohlcv_fmt.h"
+
 
 using namespace std;
 
@@ -8,19 +13,24 @@ using namespace std;
 string feeds_dir = "/home/data/crypt_data/";
 
 int config();
-string trim(std::string str);
-bool isspace(char c);
-int processFeed();
+int processFeeds();
+
+
+void test();
+
 	
 int main()
 {
 	int rc;
+
+	//test();
 
 	rc = config();
 	if (rc)
 	{
 		return rc;
 	}
+	processFeeds();
 
     return 0;
 }
@@ -51,10 +61,10 @@ int config()
 		}
 		var = lnstr.substr(0, i);
 		value = lnstr.substr(i + 1);
-		value = trim(value);
+		value = common::trim(value);
 		if (var.find("feeds_dir") != string::npos)
 		{
-			feeds_dir = trim(value);
+			feeds_dir = common::trim(value);
 			if (feeds_dir[feeds_dir.size() - 1] != '/')
 			{
 				feeds_dir.push_back('/');
@@ -66,25 +76,63 @@ int config()
 	return 0;
 }
 
-int processFeed()
+/** @brief Converts each feed file and writs it to the destination csv file in the right format */
+int convertFeed( string file )
 {
 	return 0;
 }
 
-string trim(std::string str)
+int processFeeds()
 {
-	// remove trailing white space
-	while (!str.empty() && isspace(str.back())) str.pop_back();
+	vector<string> feeds;
+	int rc;
 
-	// return residue after leading white space
-	std::size_t pos = 0;
-	while (pos < str.size() && isspace(str[pos])) ++pos;
-	return str.substr(pos);
+	rc = common::listdir( feeds, feeds_dir );
+	if ( rc )
+	{
+		return -1;	// could not find or could not read the feeds directory
+	}
+
+	for ( size_t i = 0; i < feeds.size(); ++i )
+	{
+		if ( (feeds[i] != string("bak"))  &&  	// directories to skip
+			 (feeds[i] != string("zips")) )		// directories to ignore
+		{
+			vector<string> fxfiles;
+			rc = common::listdir( feeds, feeds_dir );
+			if ( rc == 0 )
+			{
+				for ( size_t j = 0; j < fxfiles.size(); ++j )
+				{
+					string f = feeds_dir + feeds[i] + "/" + fxfiles[j];
+					convertFeed( f );
+				}
+			}
+		}
+	}
+
+	return 0;
 }
 
-bool isspace(char c)
+
+void dir_test()
 {
-	return ((c == ' ') || (c == '\t'));
+	vector<string> dirEntries;
+	int rc;
+
+	rc = common::listdir( dirEntries, feeds_dir );
+	if ( rc ) return;
+	for ( size_t i = 0; i < dirEntries.size(); ++i )
+	{
+		cout<< " ["<< dirEntries[i].c_str() << "]" << endl;
+	}
+	cout<< endl;
+
 }
 
+
+void test()
+{
+	dir_test();
+}
 
