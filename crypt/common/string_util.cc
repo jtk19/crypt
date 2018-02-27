@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include "string_util.h"
 
 
@@ -17,3 +18,31 @@ bool common::isspace(char c)
 	return ((c == ' ') || (c == '\t'));
 }
 
+string common::tolowers( string str )
+{
+	for ( size_t i = 0; i < str.length(); ++i )
+	{
+		str[i] = tolower(str[i]);
+	}
+	return str;
+}
+
+string common::strrep1( string str, string tgt, string rep )
+{
+	if ( str.find(tgt) != string::npos )
+	{
+		str.replace( str.find(tgt), tgt.length(), rep );
+	}
+	return str;
+}
+
+string common::strrep( string str, string tgt, string rep )
+{
+	while ( str.find(tgt) != string::npos )
+	{
+		str.replace( str.find(tgt), tgt.length(), rep );
+	}
+	return str;
+}
+
+///home/data/crypt_ohlcv/Bittrex Market History 8-3-2017/

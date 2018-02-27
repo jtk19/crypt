@@ -16,9 +16,12 @@ using namespace std;
 string feeds_dir = "/home/data/crypt_data/";
 string write_dir = "/home/data/crypt_ohlcv/";
 
+CryptoFeed_T current_feed = Feed_Unknown;
+
 
 int config();
 int processFeeds();
+CryptoFeed_T getFeed( string path );
 
 
 void test();
@@ -142,7 +145,7 @@ int config()
 }
 
 /** @brief Converts each feed file and writs it to the destination csv file in the right format */
-int convertFeed( string readFile, string writeDir, string writeFile )
+int convertFeed( string readFile, string writeFile )
 {
 	ifstream ifs( readFile.c_str() );
 	if (ifs.fail())
@@ -150,8 +153,11 @@ int convertFeed( string readFile, string writeDir, string writeFile )
 		cerr << "Failed to open feed csv: " << readFile.c_str()<< endl;
 		return -1;
 	}
-	cout<< " Processing feed csv file: "<< readFile.c_str()<< endl;
+	// We are going to convert i-min bars to daily bars.
+	writeFile = common::strrep1( writeFile, "1-min", "daily" );
 
+	cout<< " Processing feed csv file: "<< readFile.c_str()<< endl;
+	cout<< "   Writing to csv file: "<< writeFile.c_str()<< endl;
 
 	return 0;
 }
@@ -181,20 +187,35 @@ int processFeeds()
 			string wdir = write_dir + feeds[i] + "/";
 
 			common::create_empty_dir( wdir );
+			current_feed = getFeed( fdir );
 
 			rc = common::listdir( fxfiles, fdir );
 			if ( rc == 0 )
 			{
 				for ( size_t j = 0; j < fxfiles.size(); ++j )
 				{
-					string f = fdir + fxfiles[j];
-					convertFeed( f, wdir, fxfiles[j] );
+					convertFeed( fdir + fxfiles[j], wdir + fxfiles[j] );
 				}
 			}
 		}
 	}
 
 	return 0;
+}
+
+CryptoFeed_T getFeed( string path )
+{
+	CryptoFeed_T fd = Feed_Unknown;
+
+	if ( common::contains( path, "bittrex") )
+	{
+		fd = Feed_BittrexHistory;
+	}
+	else if ( common::contains( path, "bitcoin") )
+	{
+		fd = Feed_BitcoinHistory;
+	}
+	return fd;
 }
 
 

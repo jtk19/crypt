@@ -10,7 +10,7 @@ enum CryptoFeed_T
 {
 	Feed_BittrexHistory,
 	Feed_BitcoinHistory,
-    Feed_All
+    Feed_Unknown
 };
 
 #endif
