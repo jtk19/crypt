@@ -43,10 +43,54 @@ int main()
 }
 
 
+int create_dir( string path )
+{
+	DIR *dr;
+	if (  ( ( dr = opendir(path.c_str()) ) == NULL ) )
+	{
+		cout<< "Creating ["<< path.c_str()<< "]";
+		if ( mkdir(path.c_str(), 0775) != 0 )
+		{
+			cerr << endl<< "Failed to create ["<< path.c_str()<< "]"<< endl;
+			return -1;
+		}
+		cout<< " . . . done"<< endl;
+	}
+	else
+	{
+		closedir(dr);
+	}
+	return 0;
+}
+
+int create_empty_dir( string path )
+{
+	DIR *dr;
+	if (  ( ( dr = opendir(path.c_str()) ) == NULL ) )
+	{
+		cout<< "Creating ["<< path.c_str()<< "]";
+		if ( mkdir(path.c_str(), 0775) != 0 )
+		{
+			cerr << endl<< "Failed to create ["<< path.c_str()<< "]"<< endl;
+			return -1;
+		}
+		cout<< " . . . done"<< endl;
+	}
+	else
+	{
+		string cmd = string( " rm -rf ") + path + "/*";
+		closedir(dr);
+		system( cmd.c_str());
+	}
+	return 0;
+}
+
+
 int config()
 {
 	string var, value;
 	char line[1024];
+	DIR *dr;
 	size_t i;
 
 	ifstream cfgs( CRYPT_CONFIG_FILE );
@@ -91,7 +135,7 @@ int config()
 			test_dir = write_dir + "test_dir/";
 			test_file = test_dir + "test_file.txt";
 
-			if (  ( opendir(write_dir.c_str()) == NULL ) )
+			if (  ( ( dr = opendir(write_dir.c_str())) == NULL ) )
 			{
 				cout<< "Test directory does not exist. Creating... ";
 				if ( mkdir(write_dir.c_str(), 0775) != 0 )
@@ -106,15 +150,23 @@ int config()
 				}
 				cout<< "done."<< endl;
 			}
-			else if (  ( opendir(test_dir.c_str()) == NULL ) )
+			else
 			{
-				cout<< "Test directory does not exist. Creating... ";
-				if ( mkdir(test_dir.c_str(), 0775) != 0 )
+				closedir(dr);
+				if (  ( dr = opendir(test_dir.c_str() ) ) == NULL )
 				{
-					cerr << endl<< "Failed to open or create the write test directory: "<< test_dir.c_str()<< endl;
-					return -3;
+					cout<< "Test directory does not exist. Creating... ";
+					if ( mkdir(test_dir.c_str(), 0775) != 0 )
+					{
+						cerr << endl<< "Failed to open or create the write test directory: "<< test_dir.c_str()<< endl;
+						return -3;
+					}
+					cout<< "done."<< endl;
 				}
-				cout<< "done."<< endl;
+				else
+				{
+					closedir( dr );
+				}
 			}
 
 			ofstream wfs( test_file );
@@ -141,7 +193,7 @@ int convertFeed( string file )
 		cerr << "Failed to open feed: " << file.c_str()<< endl;
 		return -1;
 	}
-	cout<< "Processing feed csv file: "<< file.c_str()<< endl;
+	cout<< " Processing feed csv file: "<< file.c_str()<< endl;
 
 
 	return 0;
@@ -166,6 +218,10 @@ int processFeeds()
 		{
 			vector<string> fxfiles;
 			string fdir = feeds_dir + feeds[i];
+			string wdir = write_dir + feeds[i];
+
+			create_empty_dir( wdir );
+
 			rc = common::listdir( fxfiles, fdir );
 			if ( rc == 0 )
 			{
