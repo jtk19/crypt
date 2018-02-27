@@ -35,6 +35,8 @@ int main()
 	{
 		return rc;
 	}
+	cout<< "Config worked"<< endl;
+
 	processFeeds();
 
     return 0;
@@ -89,11 +91,30 @@ int config()
 			test_dir = write_dir + "test_dir/";
 			test_file = test_dir + "test_file.txt";
 
-			if (  ( opendir(test_dir.c_str()) == NULL)
-			   || ( mkdir(test_dir.c_str(), 0775) != 0 ) )
+			if (  ( opendir(write_dir.c_str()) == NULL ) )
 			{
-				cerr << "Failed to open or create the write test directory: "<< test_dir.c_str()<< endl;
-				return -2;
+				cout<< "Test directory does not exist. Creating... ";
+				if ( mkdir(write_dir.c_str(), 0775) != 0 )
+				{
+					cerr << endl<< "Failed to open or create the write directory: "<< write_dir.c_str()<< endl;
+					return -2;
+				}
+				else if ( mkdir(test_dir.c_str(), 0775) != 0 )
+				{
+					cerr << endl<< "Failed to open or create the write test directory: "<< test_dir.c_str()<< endl;
+					return -3;
+				}
+				cout<< "done."<< endl;
+			}
+			else if (  ( opendir(test_dir.c_str()) == NULL ) )
+			{
+				cout<< "Test directory does not exist. Creating... ";
+				if ( mkdir(test_dir.c_str(), 0775) != 0 )
+				{
+					cerr << endl<< "Failed to open or create the write test directory: "<< test_dir.c_str()<< endl;
+					return -3;
+				}
+				cout<< "done."<< endl;
 			}
 
 			ofstream wfs( test_file );
@@ -120,7 +141,7 @@ int convertFeed( string file )
 		cerr << "Failed to open feed: " << file.c_str()<< endl;
 		return -1;
 	}
-
+	cout<< "Processing feed csv file: "<< file.c_str()<< endl;
 
 
 	return 0;
@@ -144,12 +165,13 @@ int processFeeds()
 			 (feeds[i] != string("zips")) )		// directories to ignore
 		{
 			vector<string> fxfiles;
-			rc = common::listdir( feeds, feeds_dir );
+			string fdir = feeds_dir + feeds[i];
+			rc = common::listdir( fxfiles, fdir );
 			if ( rc == 0 )
 			{
 				for ( size_t j = 0; j < fxfiles.size(); ++j )
 				{
-					string f = feeds_dir + feeds[i] + "/" + fxfiles[j];
+					string f = fdir + "/" + fxfiles[j];
 					convertFeed( f );
 				}
 			}
