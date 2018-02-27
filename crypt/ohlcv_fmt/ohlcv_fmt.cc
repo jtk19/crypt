@@ -35,54 +35,11 @@ int main()
 	{
 		return rc;
 	}
-	cout<< "Config worked"<< endl;
+	cout<< "Config completed."<< endl<< endl;
 
 	processFeeds();
 
     return 0;
-}
-
-
-int create_dir( string path )
-{
-	DIR *dr;
-	if (  ( ( dr = opendir(path.c_str()) ) == NULL ) )
-	{
-		cout<< "Creating ["<< path.c_str()<< "]";
-		if ( mkdir(path.c_str(), 0775) != 0 )
-		{
-			cerr << endl<< "Failed to create ["<< path.c_str()<< "]"<< endl;
-			return -1;
-		}
-		cout<< " . . . done"<< endl;
-	}
-	else
-	{
-		closedir(dr);
-	}
-	return 0;
-}
-
-int create_empty_dir( string path )
-{
-	DIR *dr;
-	if (  ( ( dr = opendir(path.c_str()) ) == NULL ) )
-	{
-		cout<< "Creating ["<< path.c_str()<< "]";
-		if ( mkdir(path.c_str(), 0775) != 0 )
-		{
-			cerr << endl<< "Failed to create ["<< path.c_str()<< "]"<< endl;
-			return -1;
-		}
-		cout<< " . . . done"<< endl;
-	}
-	else
-	{
-		string cmd = string( " rm -rf ") + path + "/*";
-		closedir(dr);
-		system( cmd.c_str());
-	}
-	return 0;
 }
 
 
@@ -185,15 +142,15 @@ int config()
 }
 
 /** @brief Converts each feed file and writs it to the destination csv file in the right format */
-int convertFeed( string file )
+int convertFeed( string readFile, string writeDir, string writeFile )
 {
-	ifstream ifs( file.c_str() );
+	ifstream ifs( readFile.c_str() );
 	if (ifs.fail())
 	{
-		cerr << "Failed to open feed: " << file.c_str()<< endl;
+		cerr << "Failed to open feed csv: " << readFile.c_str()<< endl;
 		return -1;
 	}
-	cout<< " Processing feed csv file: "<< file.c_str()<< endl;
+	cout<< " Processing feed csv file: "<< readFile.c_str()<< endl;
 
 
 	return 0;
@@ -211,24 +168,27 @@ int processFeeds()
 		return -1;	// could not find or could not read the feeds directory
 	}
 
+	string cmd = string("rm -rf ") + write_dir + "/*";
+	system( cmd.c_str() );
+
 	for ( size_t i = 0; i < feeds.size(); ++i )
 	{
 		if ( (feeds[i] != string("bak"))  &&  	// directories to skip
 			 (feeds[i] != string("zips")) )		// directories to ignore
 		{
 			vector<string> fxfiles;
-			string fdir = feeds_dir + feeds[i];
-			string wdir = write_dir + feeds[i];
+			string fdir = feeds_dir + feeds[i] + "/";
+			string wdir = write_dir + feeds[i] + "/";
 
-			create_empty_dir( wdir );
+			common::create_empty_dir( wdir );
 
 			rc = common::listdir( fxfiles, fdir );
 			if ( rc == 0 )
 			{
 				for ( size_t j = 0; j < fxfiles.size(); ++j )
 				{
-					string f = fdir + "/" + fxfiles[j];
-					convertFeed( f );
+					string f = fdir + fxfiles[j];
+					convertFeed( f, wdir, fxfiles[j] );
 				}
 			}
 		}

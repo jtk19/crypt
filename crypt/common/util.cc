@@ -1,4 +1,5 @@
-
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <dirent.h>
 #include "util.h"
 
@@ -25,5 +26,47 @@ int common::listdir( vector<string> &dirEntries, string path )
 	}
 
 	closedir(dp);
+	return 0;
+}
+
+int common::create_dir( string path )
+{
+	DIR *dr;
+	if (  ( ( dr = opendir(path.c_str()) ) == NULL ) )
+	{
+		cout<< "Creating ["<< path.c_str()<< "]";
+		if ( mkdir(path.c_str(), 0775) != 0 )
+		{
+			cerr << endl<< "Failed to create ["<< path.c_str()<< "]"<< endl;
+			return -1;
+		}
+		cout<< " . . . done"<< endl;
+	}
+	else
+	{
+		closedir(dr);
+	}
+	return 0;
+}
+
+int common::create_empty_dir( string path )
+{
+	DIR *dr;
+	if (  ( ( dr = opendir(path.c_str()) ) == NULL ) )
+	{
+		cout<< "Creating ["<< path.c_str()<< "]";
+		if ( mkdir(path.c_str(), 0775) != 0 )
+		{
+			cerr << endl<< "Failed to create ["<< path.c_str()<< "]"<< endl;
+			return -1;
+		}
+		cout<< " . . . done"<< endl;
+	}
+	else
+	{
+		string cmd = string( " rm -rf ") + path + "/*";
+		closedir(dr);
+		system( cmd.c_str());
+	}
 	return 0;
 }
