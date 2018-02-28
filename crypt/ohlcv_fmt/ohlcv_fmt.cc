@@ -24,11 +24,10 @@ struct FeedRec_T
 	double	close;
 	double	volume_base;
 	double 	volume_currency;
-	float 	price;
 
 	FeedRec_T()
 	:timestamp({0}), open(0.0), high(0.0), low(0.0), close(0.0),
-	 volume_base(0.0), volume_currency(0.0), price(0.0)
+	 volume_base(0.0), volume_currency(0.0)
 	{}
 };
 
@@ -255,13 +254,12 @@ int getLineData( FeedRec_T &rec, string line )
 		}
 		if ( is.good() )
 		{
-			is >> rec.price;
+			getline( is, discard ); // discard "weighted price" through to the end of the line
 
 		}
 		else
 		{
-			cerr<< "Feed csv error Price, less than required fields: "<< line<< endl;
-			return -9;
+			// Do nothing. We've got what we want.
 		}
 	}
 	// Bittrex feed
@@ -358,6 +356,11 @@ int getLineData( FeedRec_T &rec, string line )
 	return 0;
 }
 
+inline long get_day( struct tm &dtm )
+{
+	return ( dtm.tm_year * 10000  +  dtm.tm_mon * 100 + dtm.tm_mday );
+}
+
 /** @brief Converts each feed file and writs it to the destination csv file in the right format */
 int convertFeed( string readFile, string writeFile )
 {
@@ -406,11 +409,24 @@ int convertFeed( string readFile, string writeFile )
 			rtn = getLineData( line_rec, line );
 			if ( rtn < 0 )
 			{
-				// error
+				// error, ignore
 			}
 			else
 			{
-
+				if ( get_day( rec.timestamp) == get_day( line_rec.timestamp) )	// aggregate for daily data
+				{
+					rec.close = line_rec.close;
+					if ( rec.high < line_rec.high )
+					{
+						rec.high = line_rec.high;
+					}
+					if ( rec.low > line_rec.low )
+					{
+						rec.low = line_rec.low;
+					}
+					rec.volume_base += line_rec.volume_base;
+					rec.volume_currency += line_rec.volume_currency;
+				}
 			}
 		}
 
