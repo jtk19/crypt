@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include <sstream>
 #include "string_util.h"
 
 
@@ -18,7 +19,7 @@ bool common::isspace(char c)
 	return ((c == ' ') || (c == '\t'));
 }
 
-string common::tolowers( string str )
+string common::strtolower( string str )
 {
 	for ( size_t i = 0; i < str.length(); ++i )
 	{
@@ -45,4 +46,16 @@ string common::strrep( string str, string tgt, string rep )
 	return str;
 }
 
-///home/data/crypt_ohlcv/Bittrex Market History 8-3-2017/
+void common::split( vector<string> &tokens, string line, char sep )
+{
+	string tok;
+	stringbuf sbuf( line );
+	istream is(&sbuf);
+
+	while ( is.good() )
+	{
+		getline( is, tok, sep);
+		tokens.push_back( trim(tok) );
+	}
+}
+

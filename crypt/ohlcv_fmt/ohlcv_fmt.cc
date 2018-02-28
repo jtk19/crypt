@@ -1,9 +1,12 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <vector>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <dirent.h>
+#include <time.h>
+#include <vector>
 
 #include <string_util.h>
 #include <util.h>
@@ -11,6 +14,23 @@
 
 
 using namespace std;
+
+struct FeedRec_T
+{
+	time_t	timestamp;
+	double	open;
+	double	high;
+	double	low;
+	double	close;
+	double	volume_base;
+	double 	volume_currency;
+	float 	price;
+
+	FeedRec_T()
+	:timestamp(0), open(0.0), high(0.0), low(0.0), close(0.0),
+	 volume_base(0.0), volume_currency(0.0), price(0.0)
+	{}
+};
 
 
 string feeds_dir = "/home/data/crypt_data/";
@@ -65,9 +85,11 @@ int config()
 	{
 
 		cfgs.getline(line, 1023);
-		string lnstr(line);
+		string lnstr( common::trim(line) );
 		i = lnstr.find("=");
-		if (i == string::npos)
+		if  (  ( lnstr[0] == '#' ) 		// skip as comments
+			|| (i == string::npos)
+			)
 		{
 			continue;
 		}
@@ -144,20 +166,257 @@ int config()
 	return 0;
 }
 
+int getLineData( FeedRec_T &rec, string line )
+{
+	string discard;
+	stringbuf sbuf( line );
+	istream is(&sbuf);
+
+	if ( common::contains( line, "NaN") )	// missing data
+		return -1;
+
+	// bitcoin feed
+	// Timestamp,Open,High,Low,Close,Volume_(BTC),Volume_(Currency),Weighted_Price
+	// 1389118680,874.6704,892.06753,874.6704,892.06753,0.03191496,28.191321036,883.32622181
+	if (current_feed ==  Feed_BitcoinHistory )
+	{
+		if ( is.good() )
+		{
+			is >> rec.timestamp;	// as epoch
+			getline( is, discard, ',');	// remove comma
+		}
+		else
+		{
+			cerr<< "Feed csv error for Date, less than required fields: "<< line<< endl;
+			return -2;
+		}
+		if ( is.good() )
+		{
+			is >> rec.open;
+			getline( is, discard, ',');	// remove comma
+		}
+		else
+		{
+			cerr<< "Feed csv error Open, less than required fields: "<< line<< endl;
+			return -3;
+		}
+		if ( is.good() )
+		{
+			is >> rec.high;
+			getline( is, discard, ',');	// remove comma
+		}
+		else
+		{
+			cerr<< "Feed csv error High, less than required fields: "<< line<< endl;
+			return -4;
+		}
+		if ( is.good() )
+		{
+			is >> rec.low;
+			getline( is, discard, ',');	// remove comma
+		}
+		else
+		{
+			cerr<< "Feed csv error Low, less than required fields: "<< line<< endl;
+			return -5;
+		}
+		if ( is.good() )
+		{
+			is >> rec.close;
+			getline( is, discard, ',');	// remove comma
+		}
+		else
+		{
+			cerr<< "Feed csv error Close, less than required fields: "<< line<< endl;
+			return -6;
+		}
+		if ( is.good() )
+		{
+			is >> rec.volume_base;
+			getline( is, discard, ',');	// remove comma
+		}
+		else
+		{
+			cerr<< "Feed csv error Volume (BTC), less than required fields: "<< line<< endl;
+			return -7;
+		}
+		if ( is.good() )
+		{
+			is >> rec.volume_currency;
+			getline( is, discard, ',');	// remove comma
+		}
+		else
+		{
+			cerr<< "Feed csv error Volume (currency), less than required fields: "<< line<< endl;
+			return -8;
+		}
+		if ( is.good() )
+		{
+			is >> rec.price;
+
+		}
+		else
+		{
+			cerr<< "Feed csv error Price, less than required fields: "<< line<< endl;
+			return -9;
+		}
+	}
+	// Bittrex feed
+	// [TimeStamp], [Open], [Close], [High], [Low], [Volume], [BaseVolume]
+	//  2/14/2014 7:47:00 AM,0.00000400,0.00000400,0.00000400,0.00000400,50000.00000000,0.20000000
+	else if (current_feed ==  Feed_BitcoinHistory )
+	{
+		if ( is.good() )	// timestamp is in ascii string format: 2/14/2014 7:47:00 AM
+		{
+			struct tm dtm;
+			string am_pm;
+			is >> dtm.tm_mon;		getline( is, discard, '/');
+			is >> dtm.tm_mday;		getline( is, discard, '/');
+			is >> dtm.tm_year;
+			is >> dtm.tm_hour;		getline( is, discard, ':');
+			is >> dtm.tm_min;		getline( is, discard, ':');
+			is >> dtm.tm_sec;
+			getline( is, am_pm, ',' );
+			if ( common::contains( am_pm, "PM") )
+			{
+				dtm.tm_hour += 12;
+			}
+			rec.timestamp = mktime( &dtm );
+		}
+		else
+		{
+			cerr<< "Feed csv error for Date, less than required fields: "<< line<< endl;
+			return -2;
+		}
+		if ( is.good() )
+		{
+			is >> rec.open;
+			getline( is, discard, ',');	// remove comma
+		}
+		else
+		{
+			cerr<< "Feed csv error Open, less than required fields: "<< line<< endl;
+			return -3;
+		}
+		if ( is.good() )
+		{
+			is >> rec.close;
+			getline( is, discard, ',');	// remove comma
+
+		}
+		else
+		{
+			cerr<< "Feed csv error Close, less than required fields: "<< line<< endl;
+			return -4;
+		}
+		if ( is.good() )
+		{
+			is >> rec.high;
+			getline( is, discard, ',');	// remove comma
+		}
+		else
+		{
+			cerr<< "Feed csv error High, less than required fields: "<< line<< endl;
+			return -5;
+		}
+		if ( is.good() )
+		{
+			is >> rec.low;
+			getline( is, discard, ',');	// remove comma
+		}
+		else
+		{
+			cerr<< "Feed csv error Low, less than required fields: "<< line<< endl;
+			return -6;
+		}
+		if ( is.good() )
+		{
+			is >> rec.volume_currency;
+			getline( is, discard, ',');	// remove comma
+		}
+		else
+		{
+			cerr<< "Feed csv error Volume (currency), less than required fields: "<< line<< endl;
+			return -7;
+		}
+		if ( is.good() )
+		{
+			is >> rec.volume_base;
+		}
+		else
+		{
+			cerr<< "Feed csv error Volume (crype), less than required fields: "<< line<< endl;
+			return -8;
+		}
+	}
+	else
+	{
+		cerr<< "CSV for unknown feed."<< endl;
+	}
+
+	return 0;
+}
+
 /** @brief Converts each feed file and writs it to the destination csv file in the right format */
 int convertFeed( string readFile, string writeFile )
 {
+	char line[1024];
+	FeedRec_T rec, line_rec;
+	bool started = false;
+	int rtn;
+
 	ifstream ifs( readFile.c_str() );
 	if (ifs.fail())
 	{
 		cerr << "Failed to open feed csv: " << readFile.c_str()<< endl;
 		return -1;
 	}
-	// We are going to convert i-min bars to daily bars.
+	// We are converting 1-min bars to daily bars.
 	writeFile = common::strrep1( writeFile, "1-min", "daily" );
+
+	ofstream ofs( writeFile.c_str() );
+	if ( ofs.fail() )
+	{
+		cerr << "Failed to open output csv: " << writeFile.c_str()<< endl;
+		return -2;
+	}
 
 	cout<< " Processing feed csv file: "<< readFile.c_str()<< endl;
 	cout<< "   Writing to csv file: "<< writeFile.c_str()<< endl;
+
+	started = false;
+	while ( ifs.good())
+	{
+
+		ifs.getline(line, 1023);
+		string lnstr( common::trim(line) );
+
+		if ( lnstr.empty() ||  (lnstr[0] == '#') ) // skip empty or comment lines
+		{
+			// skip
+		}
+		else if ( common::contains( lnstr, "TimeStamp" ) )
+		{
+			started = true;
+		}
+		else if ( started )
+		{
+			// populate FeedRec_T
+			rtn = getLineData( line_rec, line );
+			if ( rtn < 0 )
+			{
+				// error
+			}
+			else
+			{
+
+			}
+		}
+
+	}
+
+	ifs.close();
+	ofs.close();
 
 	return 0;
 }
@@ -188,14 +447,21 @@ int processFeeds()
 
 			common::create_empty_dir( wdir );
 			current_feed = getFeed( fdir );
-
-			rc = common::listdir( fxfiles, fdir );
-			if ( rc == 0 )
+			if ( current_feed < Feed_Unknown )	// Feed recognised
 			{
-				for ( size_t j = 0; j < fxfiles.size(); ++j )
+				rc = common::listdir( fxfiles, fdir );
+				if ( rc == 0 )
 				{
-					convertFeed( fdir + fxfiles[j], wdir + fxfiles[j] );
+					for ( size_t j = 0; j < fxfiles.size(); ++j )
+					{
+						convertFeed( fdir + fxfiles[j], wdir + fxfiles[j] );
+					}
 				}
+			}
+			else
+			{
+				cerr<< "[ERROR] Unknown feed at: "<< fdir<< endl;
+				continue;
 			}
 		}
 	}
