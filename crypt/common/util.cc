@@ -70,3 +70,8 @@ int common::create_empty_dir( string path )
 	}
 	return 0;
 }
+
+string date_from_epoch( struct tm dt )
+{
+	return "hi";
+}

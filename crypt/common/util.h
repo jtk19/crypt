@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <vector>
+#include <time.h>
 
 
 using namespace std;
@@ -20,6 +21,7 @@ namespace common
 extern int listdir( vector<string> &dirEntries, string path );
 extern int create_dir( string path );
 extern int create_empty_dir( string path );
+extern string date_from_epoch( struct tm dt );
 
 }
 

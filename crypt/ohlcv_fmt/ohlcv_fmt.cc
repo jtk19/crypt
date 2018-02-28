@@ -17,7 +17,7 @@ using namespace std;
 
 struct FeedRec_T
 {
-	time_t	timestamp;
+	struct tm timestamp;
 	double	open;
 	double	high;
 	double	low;
@@ -27,7 +27,7 @@ struct FeedRec_T
 	float 	price;
 
 	FeedRec_T()
-	:timestamp(0), open(0.0), high(0.0), low(0.0), close(0.0),
+	:timestamp({0}), open(0.0), high(0.0), low(0.0), close(0.0),
 	 volume_base(0.0), volume_currency(0.0), price(0.0)
 	{}
 };
@@ -182,8 +182,11 @@ int getLineData( FeedRec_T &rec, string line )
 	{
 		if ( is.good() )
 		{
-			is >> rec.timestamp;	// as epoch
+			time_t ts;
+			is >> ts;	// as epoch
 			getline( is, discard, ',');	// remove comma
+
+			rec.timestamp = *(localtime(&ts));
 		}
 		else
 		{
@@ -268,20 +271,18 @@ int getLineData( FeedRec_T &rec, string line )
 	{
 		if ( is.good() )	// timestamp is in ascii string format: 2/14/2014 7:47:00 AM
 		{
-			struct tm dtm;
 			string am_pm;
-			is >> dtm.tm_mon;		getline( is, discard, '/');
-			is >> dtm.tm_mday;		getline( is, discard, '/');
-			is >> dtm.tm_year;
-			is >> dtm.tm_hour;		getline( is, discard, ':');
-			is >> dtm.tm_min;		getline( is, discard, ':');
-			is >> dtm.tm_sec;
+			is >> rec.timestamp.tm_mon;		getline( is, discard, '/');
+			is >> rec.timestamp.tm_mday;		getline( is, discard, '/');
+			is >> rec.timestamp.tm_year;
+			is >> rec.timestamp.tm_hour;		getline( is, discard, ':');
+			is >> rec.timestamp.tm_min;		getline( is, discard, ':');
+			is >> rec.timestamp.tm_sec;
 			getline( is, am_pm, ',' );
 			if ( common::contains( am_pm, "PM") )
 			{
-				dtm.tm_hour += 12;
+				rec.timestamp.tm_hour += 12;
 			}
-			rec.timestamp = mktime( &dtm );
 		}
 		else
 		{
