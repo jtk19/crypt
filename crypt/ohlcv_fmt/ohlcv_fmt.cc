@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <dirent.h>
+#include <string.h>
 #include <time.h>
 #include <vector>
 
@@ -122,11 +123,13 @@ int config()
 				if ( mkdir(write_dir.c_str(), 0775) != 0 )
 				{
 					cerr << endl<< "Failed to open or create the write directory: "<< write_dir.c_str()<< endl;
+					cfgs.close();
 					return -2;
 				}
 				else if ( mkdir(test_dir.c_str(), 0775) != 0 )
 				{
 					cerr << endl<< "Failed to open or create the write test directory: "<< test_dir.c_str()<< endl;
+					cfgs.close();
 					return -3;
 				}
 				cout<< "done."<< endl;
@@ -140,6 +143,7 @@ int config()
 					if ( mkdir(test_dir.c_str(), 0775) != 0 )
 					{
 						cerr << endl<< "Failed to open or create the write test directory: "<< test_dir.c_str()<< endl;
+						cfgs.close();
 						return -3;
 					}
 					cout<< "done."<< endl;
@@ -154,13 +158,16 @@ int config()
 			if ( wfs.fail() )
 			{
 				cerr << "Failed to open or create the write test file: "<< test_file.c_str()<< endl;
+				cfgs.close();
 				return -3;
 			}
+			wfs.close();
 			string cmd( "rm -rf " );
 			cmd = cmd + test_dir.c_str();
 			system( cmd.c_str() );
 		}
 	}
+	cfgs.close();
 
 	return 0;
 }
@@ -387,6 +394,7 @@ int convertFeed( string readFile, string writeFile )
 
 	cout<< " Processing feed csv file: "<< readFile.c_str()<< endl;
 	cout<< "   Writing to csv file: "<< writeFile.c_str()<< endl;
+	ofs<< "[Date- yyyymmdd],[Open],[High],[Low],[Close],[Volume-crypto],[Volume-currency]"<< endl;
 
 	started = false;
 	while ( ifs.good())
@@ -426,6 +434,27 @@ int convertFeed( string readFile, string writeFile )
 					}
 					rec.volume_base += line_rec.volume_base;
 					rec.volume_currency += line_rec.volume_currency;
+				}
+				else
+				{
+					// print the aggregated daily data to file
+					char buf[16];
+					memset( buf, '\0', 16 );
+					strftime( buf, 16, "%Y%m%d", &rec.timestamp);
+
+					ofs << fixed;
+					ofs.precision(4);
+
+					ofs << buf<< ','
+						<< rec.open<< ','
+						<< rec.high<< ','
+						<< rec.low<< ','
+						<< rec.close<< ','
+						<< (long)(rec.volume_base) << ','
+						<< (long)(rec.volume_currency) << endl;
+
+					// start a new aggregation record
+					rec = line_rec;
 				}
 			}
 		}
