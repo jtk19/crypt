@@ -51,7 +51,7 @@ int main()
 {
 	int rc;
 
-	//test();
+	//test(); return 0;
 
 	rc = config();
 	if (rc)
@@ -186,6 +186,7 @@ int getLineData( FeedRec_T &rec, string line )
 	// 1389118680,874.6704,892.06753,874.6704,892.06753,0.03191496,28.191321036,883.32622181
 	if (current_feed ==  Feed_BitcoinHistory )
 	{
+		//cout<< endl;
 		if ( is.good() )
 		{
 			time_t ts;
@@ -193,6 +194,10 @@ int getLineData( FeedRec_T &rec, string line )
 			getline( is, discard, ',');	// remove comma
 
 			rec.timestamp = *(localtime(&ts));
+
+			// some tweaking for errors in epoch conversion c function
+			rec.timestamp.tm_year += 1900;
+			rec.timestamp.tm_mon += 1;
 		}
 		else
 		{
@@ -272,7 +277,7 @@ int getLineData( FeedRec_T &rec, string line )
 	// Bittrex feed
 	// [TimeStamp], [Open], [Close], [High], [Low], [Volume], [BaseVolume]
 	//  2/14/2014 7:47:00 AM,0.00000400,0.00000400,0.00000400,0.00000400,50000.00000000,0.20000000
-	else if (current_feed ==  Feed_BitcoinHistory )
+	else if (current_feed ==  Feed_BittrexHistory )
 	{
 		if ( is.good() )	// timestamp is in ascii string format: 2/14/2014 7:47:00 AM
 		{
@@ -393,8 +398,8 @@ int convertFeed( string readFile, string writeFile )
 	}
 
 	cout<< " Processing feed csv file: "<< readFile.c_str()<< endl;
-	cout<< "   Writing to csv file: "<< writeFile.c_str()<< endl;
-	ofs<< "[Date- yyyymmdd],[Open],[High],[Low],[Close],[Volume-crypto],[Volume-currency]"<< endl;
+	cout<< " Writing to csv file: "<< writeFile.c_str()<< endl;
+	ofs<< "[Date],[Open],[High],[Low],[Close],[Volume-crypto],[Volume-currency]"<< endl;
 
 	started = false;
 	while ( ifs.good())
@@ -402,6 +407,7 @@ int convertFeed( string readFile, string writeFile )
 
 		ifs.getline(line, 1023);
 		string lnstr( common::trim(line) );
+		//cout<< line;
 
 		if ( lnstr.empty() ||  (lnstr[0] == '#') ) // skip empty or comment lines
 		{
@@ -417,11 +423,16 @@ int convertFeed( string readFile, string writeFile )
 			rtn = getLineData( line_rec, line );
 			if ( rtn < 0 )
 			{
-				// error, ignore
+				// error line, ignore
 			}
 			else
 			{
-				if ( get_day( rec.timestamp) == get_day( line_rec.timestamp) )	// aggregate for daily data
+				if ( get_day( rec.timestamp) == 0 )
+				{
+					// first record
+					rec = line_rec;
+				}
+				else if ( get_day( rec.timestamp) == get_day( line_rec.timestamp) )	// aggregate for daily data
 				{
 					rec.close = line_rec.close;
 					if ( rec.high < line_rec.high )
@@ -437,21 +448,29 @@ int convertFeed( string readFile, string writeFile )
 				}
 				else
 				{
-					// print the aggregated daily data to file
-					char buf[16];
-					memset( buf, '\0', 16 );
-					strftime( buf, 16, "%Y%m%d", &rec.timestamp);
-
 					ofs << fixed;
-					ofs.precision(4);
+					ofs.precision(8);
 
-					ofs << buf<< ','
+					ofs << get_day( rec.timestamp)<< ','
 						<< rec.open<< ','
 						<< rec.high<< ','
 						<< rec.low<< ','
 						<< rec.close<< ','
-						<< (long)(rec.volume_base) << ','
-						<< (long)(rec.volume_currency) << endl;
+						<< rec.volume_base << ','
+						<< rec.volume_currency << endl;
+
+					/*
+					cout<< fixed;
+					cout.precision(8);
+					cout<< get_day( rec.timestamp)<< ','
+						<< rec.open<< ','
+						<< rec.high<< ','
+						<< rec.low<< ','
+						<< rec.close<< ','
+						<< rec.volume_base << ','
+						<< rec.volume_currency << endl;
+						*/
+
 
 					// start a new aggregation record
 					rec = line_rec;
@@ -500,6 +519,7 @@ int processFeeds()
 				{
 					for ( size_t j = 0; j < fxfiles.size(); ++j )
 					{
+						cout<< "\nProcessing feed: "<< feeds[i] << "/"<< fxfiles[j]<< endl;
 						convertFeed( fdir + fxfiles[j], wdir + fxfiles[j] );
 					}
 				}
@@ -550,9 +570,23 @@ void dir_test()
 
 }
 
+void line_test()
+{
+	struct tm dtm = {0};
+	cout<< "Day ["<< get_day( dtm )<< "] "<< endl;
+	cout<< "get_day( dtm ) == 0 ? "<< (get_day(dtm) == 0) << endl;
+
+	time_t tm = 1519939131;
+	struct tm *tp = gmtime(&tm);
+	cout<< "year: "<< tp->tm_year << "  month: "<< tp->tm_mon<< endl;
+	cout<< "Day of 1519939131 ["<< get_day( *tp )<< "] "<< endl;
+
+	cout<< "Epoch now: "<< time(NULL)<< endl;
+}
+
 
 void test()
 {
-	dir_test();
+	line_test();
 }
 

@@ -12,11 +12,15 @@ endif
 COMMON_ROOT := $(shell pwd)
 COMMON_INC := ${COMMON_ROOT}/inc
 COMMON_BUILD := ${COMMON_ROOT}/build
+COMMON_DIST := ${COMMON_ROOT}/dist
 
 curr_dir := $(shell pwd)
 
 
 SUBDIRS = common ohlcv_fmt
+
+EXECS = ohlcv_fmt
+ALL_EXECS = $(addprefix $(COMMON_BUILD)/, $(EXECS) )
 
 
 define fullBuild
@@ -34,12 +38,15 @@ all:
 
 		
 clean:
-	rm -rf $(COMMON_INC)/*.h  $(COMMON_BUILD)/*
+	rm -rf $(COMMON_INC)/*.h  $(COMMON_BUILD)/* $(COMMON_DIST)/*
 	
 cleanlog:
 cleanlogs:
 	rm -rf $(COMMON_BUILD)/*.log
 	
+install:
+	rm -f $(COMMON_DIST)/*
+	cp -f $(ALL_EXECS)  $(COMMON_BUILD)/*_config.txt $(COMMON_DIST)
 
 	
 
