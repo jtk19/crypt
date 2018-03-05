@@ -81,12 +81,17 @@ BUILDING Crypt Executable
  \# yum groupinstall "Development Tools"
 
 * Check out our source code from Hithub.
+
 $ git clone https://github.com/jtk19/crypt.git
 
 * Change to the source code base directory and build with 'make'.
+
 $ cd crypt
+
 $ make clean
+
 $ make all
+
 $ make install
 
 * You will find the required executable and config file in the dist/ and build/ directories.
