@@ -75,8 +75,8 @@ BUILDING Crypt Executable
 * Make sure the C and C++ development tools are installed on your Linux machine, as root.
 
  $ su - 
- \# yum update
- \# yum groupinstall "Development Tools"
+ \n\# yum update
+ \n\# yum groupinstall "Development Tools"
 
 * Check out our source code from Hithub.
 $ git clone https://github.com/jtk19/crypt.git
