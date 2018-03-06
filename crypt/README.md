@@ -18,8 +18,8 @@ because different feeds come with different formats and the code need to be
 changed to recognise the new feeds' formats.
 
 Note: This OHLCV formatter provides daily bars. Both of the above feeds being
-1 minute bars, the program aggregare all intra-day records for a single day to 
-provide real data for each day.   
+1 minute bars, the program aggregates all intra-day records for a single day to 
+provide real and correct data for each day.   
 Thus the Open is the Open for the first intra-day record.  
 The Close is the Close of the last intra-day record.  
 The High is the highest High of all the intra-day records.   
