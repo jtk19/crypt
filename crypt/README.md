@@ -29,6 +29,14 @@ Volumes are aggregates of all the volums for the day.
 The program is written for UNIX operating systems and must be compiled and run on
 any UNIX based distribution.
 
+Download the pre-built executables from here: 
+    https://www.dropbox.com/s/sd7r902qf53fduk/ohlcv_formatter.tar.gz?dl=0    
+
+Then to unpack, run:  
+$ gunzip ohlcv_formatter.tar.gz  
+$ tar -xvf ohlcv_formatter.tar  
+  
+  
 Steps for running:
 
 1. Create a data directory to which the account running the program has read access to.  
@@ -78,8 +86,8 @@ named appropriately under the corresponding feed sub-directory.
   
   
   
-BUILDING Crypt Executable  
--------------------------  
+BUILDING Crypt Executables  
+---------------------------  
   
 * Make sure the C and C++ development tools are installed on your Linux machine, as root.  
    
