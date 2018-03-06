@@ -17,6 +17,15 @@ If you need to format data from other feeds, please provide them to the programm
 because different feeds come with different formats and the code need to be
 changed to recognise the new feeds' formats.
 
+Note: This OHLCV formatter provides daily bars. Both of the above feeds being
+1 minute bars, the program aggregare all intra-day records for a single day to 
+provide real data for each day.   
+Thus the Open is the Open for the first intra-day record.  
+The Close is the Close of the last intra-day record.  
+The High is the highest High of all the intra-day records.   
+The the Low is the least Low of all intra-day records for the day.  
+Volumes are aggregates of all the volums for the day.  
+  
 The program is written for UNIX operating systems and must be compiled and run on
 any UNIX based distribution.
 
