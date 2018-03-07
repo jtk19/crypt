@@ -11,20 +11,21 @@ endif
 
 COMMON_ROOT := $(shell pwd)
 COMMON_INC := ${COMMON_ROOT}/inc
+COMMON_LIB := ${COMMON_ROOT}/lib
 COMMON_BUILD := ${COMMON_ROOT}/build
 COMMON_DIST := ${COMMON_ROOT}/dist
 
 curr_dir := $(shell pwd)
 
 
-SUBDIRS = common ohlcv_fmt
+SUBDIRS = common influxdb_client ohlcv_fmt
 
-EXECS = ohlcv_fmt
+EXECS = dbclient_test ohlcv_fmt
 ALL_EXECS = $(addprefix $(COMMON_BUILD)/, $(EXECS) )
 
 
 define fullBuild
-	mkdir -p ${COMMON_INC} ${COMMON_BUILD}  
+	mkdir -p ${COMMON_INC} ${COMMON_LIB} ${COMMON_BUILD}  
 	@for subdir in $(SUBDIRS); do \
 	    echo "Making all in $(curr_dir)/$$subdir"; \
 	    $(MAKE) -C $(curr_dir)/$$subdir tree;\
@@ -38,7 +39,7 @@ all:
 
 		
 clean:
-	rm -rf $(COMMON_INC)/*.h  $(COMMON_BUILD)/* $(COMMON_DIST)/*
+	rm -rf $(COMMON_INC)/*.h  ${COMMON_LIB}/* $(COMMON_BUILD)/* $(COMMON_DIST)/*
 	
 cleanlog:
 cleanlogs:
@@ -46,8 +47,9 @@ cleanlogs:
 	
 install:
 	rm -f $(COMMON_DIST)/*
-	cp -f $(ALL_EXECS)  $(COMMON_BUILD)/*_config.txt $(COMMON_DIST)
-
+	cp -f $(ALL_EXECS)  $(COMMON_DIST)
+	cp -f $(COMMON_BUILD)/*_config.txt $(COMMON_DIST)
+	
 	
 
 

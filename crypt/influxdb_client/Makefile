@@ -1,5 +1,5 @@
 #-------------------------------------------------------------
-# Makefile for nvest.ai
+# Makefile for InfluxDB HTTP Client
 #-------------------------------------------------------------
 
 .DEFAULT_GOAL := this
@@ -8,36 +8,40 @@ ifneq ($(BUILD),"RELEASE")
         export BUILD = "DEBUG"
 endif
 
-
-COMMON_BUILD := ../build
 COMMON_SRC := .
 COMMON_INC := ../inc
+COMMON_LIB := ../lib
 COMMON_CFG := ../cfg
+COMMON_BUILD := ../build
 
 curr_dir := $(shell pwd)
+MODULE := influxdb_client
 
-THIS_BUILD := $(COMMON_BUILD)/ohlcv_fmt_build
-TARGET = $(COMMON_BUILD)/ohlcv_fmt
-CFG = $(COMMON_CFG)/crypt_config.txt
+THIS_BUILD := $(COMMON_BUILD)/$(MODULE)_build
+CFG = $(COMMON_CFG)/$(MODULE)_config.txt
+TARGET = $(COMMON_BUILD)/dbclient_test
+TARGET_LIB = $(COMMON_BUILD)/lib$(MODULE)
 
-BUILDDIRS = common ohlcv_fmt
+BUILDDIRS = common $(MODULE)
 
 
 CC = g++
 
 INCLUDES = -I$(COMMON_INC) -I/usr/local/include 
 
-LIBS = -L/usr/local/lib
+LIBS = -L$(COMMON_LIB) -L/usr/local/lib
 
 SUBDIRS = 
 
 EXTDIRS = ../common 
 
 SOURCES = $(shell echo *.cc)
+LIB_SOURCES = $(filter-out dbclient_test.cc,$(SOURCES))
 
 HEADERS = $(shell echo *.h)
 
 OBJECTS = $(SOURCES:%.cc=$(THIS_BUILD)/%.o)
+LIB_OBJECTS = $(LIB_SOURCES:%.cc=$(THIS_BUILD)/%.o)
 
 
 ALL_OBJECTS1 = $(addprefix $(COMMON_BUILD)/, $(BUILDDIRS) )
@@ -45,23 +49,37 @@ ALL_OBJECTS = $(addsuffix _build/*.o, $(ALL_OBJECTS1) )
 
 
 
-CFLAGS = -Wall -g -std=c++14
+CFLAGS = -fPIC -Wall -Wextra -std=c++14 
 
 LDFLAGS = 
 
-ifeq ($(BUILD),"DEBUG")
-	CFLAGS += -DDEBUG
+ifeq ($(BUILD),"RELEASE")
+	CFLAGS += -O2 -DNDEBUG
+	LDFLAGS += -s 
+else ## DEBUG
+	CFLAGS += -O0 -g -DDEBUG
 endif
 
 
-$(OBJECTS): $(THIS_BUILD)/%.o : %.cc %.h
+
+$(LIB_OBJECTS): $(THIS_BUILD)/%.o : %.cc %.h
 	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@  
 	
-	
+.PHONY: target_lib
+target_lib: $(TARGET_LIB).so $(TARGET_LIB).a
+$(TARGET_LIB).so: $(LIB_OBJECTS)
+	$(CC) $(LDFLAGS) -shared -o $@ $(LIB_OBJECTS)  
+	cp -f $(TARGET_LIB).so $(COMMON_LIB)
+$(TARGET_LIB).a: $(LIB_OBJECTS)
+	ar rvs -o $@ $(LIB_OBJECTS)
+	cp -f $(TARGET_LIB).a $(COMMON_LIB)
+
+
 .PHONY: target_exec
 target_exec: $(TARGET)
-$(TARGET) : $(OBJECTS)
-	$(CC) $(CFLAGS) -o $@ $(ALL_OBJECTS) $(LDFLAGS) $(LIBS)
+$(TARGET) : dbclient_test.cc
+	$(CC) $(CFLAGS) $(LDFLAGS) $(LIBS) -l$(MODULE) -o $@ dbclient_test.cc 
+	
 		
 	
 define fullBuild
@@ -71,6 +89,8 @@ define fullBuild
 	    echo "Making all in $(curr_dir)/$$subdir"; \
 	    $(MAKE) -C $(curr_dir)/$$subdir all;\
 	done
+	echo $(LIB_OBJECTS)
+	$(MAKE) target_lib
 	$(MAKE) target_exec
 	@# post-build steps
 	cp $(CFG) $(COMMON_BUILD)/
@@ -87,6 +107,8 @@ define extbuild
 	    echo "Making all in $(curr_dir)/$$subdir"; \
 	    $(MAKE) -C $(curr_dir)/$$subdir all;\
 	done
+	echo $(LIB_OBJECTS)
+	$(MAKE) target_lib
 	$(MAKE) target_exec
 	@# post-build steps
 	cp $(CFG) $(COMMON_BUILD)/
@@ -101,7 +123,6 @@ all:
 	$(call extbuild)
 
 clean:
-	rm -rf $(THIS_BUILD) $(COMMON_BUILD)/ohclv_fmt $(COMMON_BUILD)/crypt_config.txt
-	
+	rm -rf $(THIS_BUILD) $(TARGET) $(COMMON_BUILD)/*$(MODULE)*.*
 	
 	

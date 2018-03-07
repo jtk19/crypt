@@ -20,6 +20,8 @@ THIS_BUILD := $(COMMON_BUILD)/ohlcv_fmt_build
 TARGET = $(COMMON_BUILD)/ohlcv_fmt
 CFG = $(COMMON_CFG)/crypt_config.txt
 
+BUILDDIRS = common ohlcv_fmt
+
 
 CC = g++
 
@@ -27,12 +29,9 @@ INCLUDES = -I$(COMMON_INC) -I/usr/local/include
 
 LIBS = -L/usr/local/lib
 
-
 SUBDIRS = 
 
 EXTDIRS = ../common 
-
-BUILDDIRS = common ohlcv_fmt
 
 SOURCES = $(shell echo *.cc)
 
@@ -50,8 +49,11 @@ CFLAGS = -Wall -g -std=c++14
 
 LDFLAGS = 
 
-ifeq ($(BUILD),"DEBUG")
-	CFLAGS += -DDEBUG
+ifeq ($(BUILD),"RELEASE")
+	CFLAGS += -O2
+	LDFLAGS += -s
+else ## DEBUG
+	CFLAGS += -g -DDEBUG
 endif
 
 
@@ -102,7 +104,7 @@ all:
 	$(call extbuild)
 
 clean:
-	rm -rf $(THIS_BUILD) $(COMMON_BUILD)/ohclv_fmt $(COMMON_BUILD)/crypt_config.txt
+	rm -rf $(THIS_BUILD) $(COMMON_BUILD)/ohlcv_fmt $(COMMON_BUILD)/crypt_config.txt
 	
 	
 	
