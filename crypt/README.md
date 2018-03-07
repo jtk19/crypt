@@ -29,8 +29,8 @@ Volumes are aggregates of all the volums for the day.
 The program is written for UNIX operating systems and must be compiled and run on
 any UNIX based distribution.
 
-Download the pre-built executables from here: 
-    https://www.dropbox.com/s/sd7r902qf53fduk/ohlcv_formatter.tar.gz?dl=0    
+Download the pre-built executable for Fedora 26 (x86_64) from here:  
+      https://www.dropbox.com/s/sd7r902qf53fduk/ohlcv_formatter.tar.gz?dl=0    
 
 Then to unpack, run:  
 $ gunzip ohlcv_formatter.tar.gz  
