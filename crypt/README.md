@@ -57,10 +57,10 @@ to the CSV files.
   
 e.g:  
 	/home/data/olhv_data/					## the data directory  
-	|-> 'Bittrex Market History 8-3-2017'/		        ## the Bittrex feed sub-directory  
-	      |-> bittrex1.csv
+	|-> 'Bittrex Market History 8-3-2017'/		        ## the Bittrex feed sub-directory    
+	      |-> bittrex1.csv  
 	|-> bitcoin-historical-data/				## the Bitcoin feed sub-directory  
-	      |-> Bitcoin1.csv
+	      |-> Bitcoin1.csv  
 	|-> zips/									## ignored  
 	|-> bak/									## ignored  
 	
