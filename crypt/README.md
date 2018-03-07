@@ -57,12 +57,12 @@ to the CSV files.
   
 e.g:  
 	/home/data/olhv_data/					## the data directory  
-	|-> 'Bittrex Market History 8-3-2017'/		        ## the Bittrex feed sub-directory    
-	      |-> bittrex1.csv  
-	|-> bitcoin-historical-data/				## the Bitcoin feed sub-directory  
-	      |-> Bitcoin1.csv  
-	|-> zips/									## ignored  
-	|-> bak/									## ignored  
+	.   |-> 'Bittrex Market History 8-3-2017'/		        ## the Bittrex feed sub-directory    
+	.       |-> bittrex1.csv  
+	.   |-> bitcoin-historical-data/				## the Bitcoin feed sub-directory  
+	.       |-> Bitcoin1.csv  
+	.   |-> zips/									## ignored  
+	.   |-> bak/									## ignored  
 	
 4. Create a directory for the converted OHLCV csv files with write access for the program.
 It is important that the program has write access to this directory.  
