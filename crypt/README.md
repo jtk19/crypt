@@ -52,13 +52,15 @@ The name "bitcoin" must be in the directory name of the sub-dir for the Bitcoin 
 Case doesn't matter; the feed name may be in the directory name in any case.  
 
 3. Directly under each feed's sub-directory, copy each data CSV file. The CSV files
-should be directly under the feed directories. There should be no other sub-directories
+should be directly under the feed sub-directories. There should be no other sub-directories
 to the CSV files.  
   
 e.g:  
-	/home/data/olhv_data/						## the data directory  
-	|-> 'Bittrex Market History 8-3-2017'/		## the Bittrex feed sub-directory  
+	/home/data/olhv_data/					## the data directory  
+	|-> 'Bittrex Market History 8-3-2017'/		        ## the Bittrex feed sub-directory  
+	      |-> bittrex1.csv
 	|-> bitcoin-historical-data/				## the Bitcoin feed sub-directory  
+	      |-> Bitcoin1.csv
 	|-> zips/									## ignored  
 	|-> bak/									## ignored  
 	
