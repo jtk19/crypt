@@ -20,8 +20,15 @@ curr_dir := $(shell pwd)
 
 SUBDIRS = common influxdb_client ohlcv_fmt
 
-EXECS = dbclient_test ohlcv_fmt
+EXECS = ohlcv_fmt
+
+LIBS = influxdb_client	## exclude test programs
+
 ALL_EXECS = $(addprefix $(COMMON_BUILD)/, $(EXECS) )
+
+LIBS1 = $(addprefix $(COMMON_BUILD)/lib, $(LIBS) )
+ALL_LIBS = $(addsuffix .so, $(LIBS1) ) 
+ALL_LIBS += $(addsuffix .a, $(LIBS1) )
 
 
 define fullBuild
@@ -37,7 +44,6 @@ all:
 	$(call fullBuild)
 	
 
-		
 clean:
 	rm -rf $(COMMON_INC)/*.h  ${COMMON_LIB}/* $(COMMON_BUILD)/* $(COMMON_DIST)/*
 	
@@ -45,9 +51,11 @@ cleanlog:
 cleanlogs:
 	rm -rf $(COMMON_BUILD)/*.log
 	
+	
 install:
 	rm -f $(COMMON_DIST)/*
 	cp -f $(ALL_EXECS)  $(COMMON_DIST)
+	cp -f $(ALL_LIBS)  $(COMMON_DIST)
 	cp -f $(COMMON_BUILD)/*_config.txt $(COMMON_DIST)
 	
 	
