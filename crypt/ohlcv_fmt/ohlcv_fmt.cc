@@ -38,6 +38,8 @@ string write_dir = "/home/data/crypt_ohlcv/";
 
 CryptoFeed_T current_feed = Feed_Unknown;
 
+bool hourly = true;
+
 
 int config();
 int processFeeds();
@@ -373,6 +375,16 @@ inline long get_day( struct tm &dtm )
 	return ( dtm.tm_year * 10000  +  dtm.tm_mon * 100 + dtm.tm_mday );
 }
 
+inline long get_period( bool hourly, struct tm &dtm )
+{
+	long prd = dtm.tm_year * 10000  +  dtm.tm_mon * 100 + dtm.tm_mday;
+	if ( hourly )
+	{
+		prd = prd * 100 + dtm.tm_hour;
+	}
+	return prd;
+}
+
 /** @brief Converts each feed file and writs it to the destination csv file in the right format */
 int convertFeed( string readFile, string writeFile )
 {
@@ -387,8 +399,9 @@ int convertFeed( string readFile, string writeFile )
 		cerr << "Failed to open feed csv: " << readFile.c_str()<< endl;
 		return -1;
 	}
-	// We are converting 1-min bars to daily bars.
-	writeFile = common::strrep1( writeFile, "1-min", "daily" );
+	// We are converting 1-min bars to daily/hourly bars.
+	string pr = (hourly ? "hourly" : "daily" );
+	writeFile = common::strrep1( writeFile, "1-min", pr );
 
 	ofstream ofs( writeFile.c_str() );
 	if ( ofs.fail() )
@@ -399,7 +412,15 @@ int convertFeed( string readFile, string writeFile )
 
 	cout<< " Processing feed csv file: "<< readFile.c_str()<< endl;
 	cout<< " Writing to csv file: "<< writeFile.c_str()<< endl;
-	ofs<< "[Date],[Open],[High],[Low],[Close],[Volume-crypto],[Volume-currency]"<< endl;
+	if ( hourly)
+	{
+		ofs << "[Hour]";
+	}
+	else
+	{
+		ofs << "[Date]";
+	}
+	ofs<< ",[Open],[High],[Low],[Close],[Volume-crypto],[Volume-currency]"<< endl;
 
 	started = false;
 	while ( ifs.good())
@@ -424,15 +445,17 @@ int convertFeed( string readFile, string writeFile )
 			if ( rtn < 0 )
 			{
 				// error line, ignore
+				continue;
 			}
+
 			else
 			{
-				if ( get_day( rec.timestamp) == 0 )
+				if ( get_period( hourly, rec.timestamp) == 0 )
 				{
 					// first record
 					rec = line_rec;
 				}
-				else if ( get_day( rec.timestamp) == get_day( line_rec.timestamp) )	// aggregate for daily data
+				else if ( get_period( hourly, rec.timestamp) == get_period( hourly, line_rec.timestamp) )	// aggregate for daily/hourly data
 				{
 					rec.close = line_rec.close;
 					if ( rec.high < line_rec.high )
@@ -448,16 +471,33 @@ int convertFeed( string readFile, string writeFile )
 				}
 				else
 				{
+					long hour = get_period( hourly, rec.timestamp);
+					long new_hour = get_period( hourly, line_rec.timestamp);
+
 					ofs << fixed;
 					ofs.precision(8);
 
-					ofs << get_day( rec.timestamp)<< ','
+					ofs << hour<<','
 						<< rec.open<< ','
 						<< rec.high<< ','
 						<< rec.low<< ','
 						<< rec.close<< ','
 						<< rec.volume_base << ','
 						<< rec.volume_currency << endl;
+
+					// Pad for hours with no records.
+					++hour;
+					while ( hour < new_hour )
+					{
+						ofs << hour<<','
+							<< rec.close<< ','
+							<< rec.close<< ','
+							<< rec.close<< ','
+							<< rec.close<< ','
+							<< 0.00 << ','
+							<< 0.00 << endl;
+						++hour;
+					}
 
 					/*
 					cout<< fixed;
