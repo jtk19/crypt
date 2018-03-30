@@ -38,7 +38,7 @@ string write_dir = "/home/data/crypt_ohlcv/";
 
 CryptoFeed_T current_feed = Feed_Unknown;
 
-bool hourly = true;
+bool hourly = false;
 
 
 int config();
@@ -49,11 +49,32 @@ CryptoFeed_T getFeed( string path );
 void test();
 
 	
-int main()
+int main( int argc, char *argv[] )
 {
 	int rc;
 
 	//test(); return 0;
+
+	if ( argc > 1 )
+	{
+		if ( string(argv[1]) == string("-h") )
+		{
+			hourly = true;
+		}
+		else if ( string(argv[1]) == string("-d") )
+		{
+			hourly = false;
+		}
+	}
+
+	if (hourly)
+	{
+		cout<< "Running formatting for hourly bars."<< endl;
+	}
+	else
+	{
+		cout<< "Running formatting for daily bars."<< endl;
+	}
 
 	rc = config();
 	if (rc)

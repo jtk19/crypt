@@ -81,7 +81,10 @@ $ ls ./bin
 ohlcv_fmt  
 crypt_config.txt  
   
-$ ./ohclv_fmt  
+Run with a '-h' switch for hourly bars; with a '-d' switch for daily bars. 
+If you run with no switch, the program will run with the default daily bar formatting.
+
+$ ./ohclv_fmt -h
   
 7.  The correctly converted OHLCV csv files will be written into the write_dir
 named appropriately under the corresponding feed sub-directory.  
