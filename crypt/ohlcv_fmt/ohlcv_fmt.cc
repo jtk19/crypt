@@ -492,13 +492,12 @@ int convertFeed( string readFile, string writeFile )
 				}
 				else
 				{
-					long hour = get_period( hourly, rec.timestamp);
-					long new_hour = get_period( hourly, line_rec.timestamp);
+					long hd = get_period( hourly, rec.timestamp);			// hour or day
 
 					ofs << fixed;
 					ofs.precision(8);
 
-					ofs << hour<<','
+					ofs << hd<< ','
 						<< rec.open<< ','
 						<< rec.high<< ','
 						<< rec.low<< ','
@@ -507,17 +506,28 @@ int convertFeed( string readFile, string writeFile )
 						<< rec.volume_currency << endl;
 
 					// Pad for hours with no records.
-					++hour;
-					while ( hour < new_hour )
+					if ( hourly )
 					{
-						ofs << hour<<','
-							<< rec.close<< ','
-							<< rec.close<< ','
-							<< rec.close<< ','
-							<< rec.close<< ','
-							<< 0.00 << ','
-							<< 0.00 << endl;
-						++hour;
+						// Pad only within the same day and not overnight hours.
+						long day = get_day( rec.timestamp);
+						long new_day = get_day( line_rec.timestamp);
+
+						if (new_day == day)
+						{
+							long new_hd = get_period( hourly, line_rec.timestamp);
+							++hd;
+							while ( hd < new_hd )
+							{
+								ofs << hd<<','
+									<< rec.close<< ','
+									<< rec.close<< ','
+									<< rec.close<< ','
+									<< rec.close<< ','
+									<< 0.00 << ','
+									<< 0.00 << endl;
+								++hd;
+							}
+						}
 					}
 
 					/*
