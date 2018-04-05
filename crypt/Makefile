@@ -18,7 +18,7 @@ COMMON_DIST := ${COMMON_ROOT}/dist
 curr_dir := $(shell pwd)
 
 
-SUBDIRS = common influxdb_client ohlcv_fmt
+SUBDIRS = common ohlcv_fmt
 
 EXECS = ohlcv_fmt
 
